@@ -1,0 +1,39 @@
+# Lab 5 - Task 1: Great Expectations on the given Labels Dataset
+
+# Step 1: Install Great Expectations
+!pip install great_expectations
+
+# Step 2: Import libraries
+import pandas as pd
+import great_expectations as gx
+
+# Step 3: Load the dataset
+df = pd.read_csv("Labels (2).csv")
+
+# Step 4: Set up Great Expectations context and validator
+context = gx.get_context()
+validator = context.sources.pandas_default().read_dataframe(df)
+
+# Step 5: Expectation 1 - Car1_Location_X should be within spatial bounds
+validator.expect_column_values_to_be_between(
+    column="Car1_Location_X",
+    min_value=-100,
+    max_value=100,
+    mostly=1.0
+)
+
+# Step 6: Expectation 2 - Occluded_Image_view should not have nulls
+validator.expect_column_values_to_not_be_null(
+    column="Occluded_Image_view"
+)
+
+# Step 7: Expectation 3 - Ground_Truth_View should follow expected naming format
+expected_views = [f"C_{str(i).zfill(3)}.png" for i in range(1, 122)]
+validator.expect_column_values_to_be_in_set(
+    column="Ground_Truth_View",
+    value_set=expected_views
+)
+
+# Step 8: Run validation and display results
+results = validator.validate()
+print(results)
